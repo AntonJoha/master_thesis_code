@@ -15,14 +15,19 @@ class Discriminator(nn.Module):
     def dummy_function(self, dont=None, care=None):
         return torch.zeros(self.input_dim)
 
-    def __init__(self, input_dim=1, output_dim=1, hidden_size=100):
+    def __init__(self, input_dim=1, output_dim=1, hidden_size=100, device=None):
         super(Discriminator, self).__init__()
+        
+
+        self.device=device
+        if device is None:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size=self.input_dim, hidden_size=self.hidden_size).double()
-        self.linear = nn.Linear(in_features=self.hidden_size, out_features=self.output_dim).double()
+        self.lstm = nn.LSTM(input_size=self.input_dim, hidden_size=self.hidden_size)
+        self.linear = nn.Linear(in_features=self.hidden_size, out_features=self.output_dim)
         self.relu = nn.LeakyReLU()
         self.sig = nn.Sigmoid()
 
@@ -37,8 +42,8 @@ class Discriminator(nn.Module):
         return self.sig(y)
 
     def random_state(self):
-        self.internal_state = [torch.randn(1, 100).double(),
-                               torch.randn(1, 100).double()]
+        self.internal_state = [torch.randn(1, 100).to(self.device),
+                               torch.randn(1, 100).to(self.device)]
 
 
 
