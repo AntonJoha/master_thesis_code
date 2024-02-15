@@ -1,9 +1,3 @@
-import argparse
-import os
-import numpy as np
-import math
-
-
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
@@ -18,16 +12,26 @@ class Generator(nn.Module):
     def dummy_function(self, dont=None, care=None):
         return torch.zeros(self.input_dim)
 
-    def __init__(self, input_dim=5, output_dim=1, layers=2):
+    def __init__(self, input_dim=50, output_dim=1, layers=10, g_size=50):
         super(Generator, self).__init__()
 
         self.input_dim = input_dim
         self.output_dim = output_dim
+        self.g_size = g_size
         self.layers = layers
         self.make_layers()
         self.lstm_zero()
         self.sig = nn.Sigmoid()
 
+
+    def get_g(self):
+        
+        to_return = nn.Sequential(
+                nn.Linear(in_features=self.input_dim, out_features=self.g_size).double(),
+                nn.ReLU(),
+                nn.Linear(in_features=self.g_size, out_features=self.input_dim).double(),
+                )
+        return to_return
 
     def make_layers(self):
         operations = []
@@ -36,7 +40,7 @@ class Generator(nn.Module):
         self.G = nn.ModuleList()
         for i in range(self.layers):
             self.T.append(nn.LSTM(input_size=self.input_dim, hidden_size=self.input_dim).double())
-            self.G.append(nn.Linear(in_features=self.input_dim, out_features=self.output_dim).double())
+            self.G.append(self.get_g())
             
         self.last = nn.Linear(in_features=self.input_dim, out_features=self.output_dim).double()
 
