@@ -15,22 +15,19 @@ class PredictTime(nn.Module):
         self.output_size = output_size
         self.hidden_size = hidden_size
 
-        self.lstm = nn.LSTM(input_size=input_size, hidden_size=self.hidden_size, num_layers=self.hidden_layers).to(device)
-        self.l1 = nn.Linear(self.hidden_size,self.hidden_size).to(device)
-        self.l2 = nn.Linear(self.hidden_size,self.output_size).to(device)
+        self.lstm1 = nn.LSTM(input_size=input_size, hidden_size=self.hidden_size1, num_layers=1).to(device) # two lstm different hidden size
+        if hidden_layers == 2:
+            self.lstm2 = nn.LSTM(input_size=self.hidden_size1, hidden_size=self.hidden_size2, num_layers=1).to(device)
+        self.l = nn.Linear(self.hidden_size,self.output_size).to(device)
 
         self.clean_state()
 
         self.sig = nn.Sigmoid()
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU() #GELU
         
     def forward(self, x):
  
         x, self.hidden = self.lstm(x, self.hidden)
-        #x = self.relu(x)
-        
-        #x = self.l1(x)
-        #x = self.relu(x)
         x = self.l2(x)
         return self.sig(x)
     

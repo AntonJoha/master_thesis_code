@@ -19,7 +19,7 @@ def train_model(model,
     
     batch_size = sequence_length
     opt = optimizer(model.parameters(), lr=lr)
-    loader = data.DataLoader(data.TensorDataset(x_data, y_data), batch_size=batch_size)
+    loader = data.DataLoader(data.TensorDataset(x_data, y_data), batch_size=batch_size, shuffle=True)
 
     history = []
 
@@ -30,36 +30,20 @@ def train_model(model,
 
         # We might want to train with purely teacher forcing, or with a combination. 
         # This allows for both.
-        if strict_teacher_forcing == False:
-            if random.random() < e/(epochs*2):
-                model.teacher_forcing = False
-            else:
-                model.teacher_forcing = True
-        
-        res = []
+           
         for x, y in loader:
-        
-            if random.random() < 0.9:
+            
+            if random.random() < 0.5:
                 continue
+        
             model.random_state()
-        
-        
             y_pred = model(x)
             l = loss(y_pred, y)
-            res.append(l)
-        #print(y_pred, y)
-        
-        if len(res) == 0:
-            continue
-    
-        l = res[0]
-        for i in res[1:]:
-            l += i
-        opt.zero_grad()
-        l.backward()
-        opt.step()
+            opt.zero_grad()
+            l.backward()
+            opt.step()
 
-        if e % 15 != 0:
+        if e % 10 != 0:
             continue
         
         count = 0
@@ -74,16 +58,34 @@ def train_model(model,
                     
             model.teacher_forcing = False
         
+        res = []
+        model.eval()
+        model.clean_state()
+        prev = x[0]
+        for i in x:
+            un = prev.unsqueeze(0)
+
+        
+            val = model(un)
+            prev = torch.cat([prev[1:], val[0]], dim=0)
+            res.append(val.detach()[0])
+        
+        res = torch.tensor(res,device=device).to(device)
+        
+        sum_loss[1] = loss(res, y.cpu())
+        
         #Need to account for the fact that different sequence lenghts are used
         sum_loss[0] /= count
-        sum_loss[1] /= count
+        
         
         history.append([e, sum_loss[0], sum_loss[1]])
+        print(history[-1])
 
-        #if len(history) > 20:
-            # if no real improvements are being done stop the training. 
-            #if abs(history[-10][1] - history[-1][1]) < 0.0002 and abs(history[-10][2] - history[-1][2]) < 0.0002:
-                #return model, history
+        if len(history) > 10:
+            #if no real improvements are being done stop the training. 
+            # but keep doing the training if the results without correctly feeding values get better
+            if abs(history[-10][1] - history[-1][1]) < 0.0002 and history[-1][2] - history[-10][2] < 0.0002:
+                return model, history
 
     return model, history
 

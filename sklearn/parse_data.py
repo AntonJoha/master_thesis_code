@@ -12,7 +12,7 @@ def get_data():
     
     df.drop(labels=["pod_phase",
                     "num_gpu",
-                    "gpu_milli",
+                    "cpu_milli",
                     "gpu_spec",
                     "qos",
                     "deletion_time",
