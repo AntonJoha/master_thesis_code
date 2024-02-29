@@ -3,14 +3,14 @@ from parse_data import get_data, get_modified_values, get_binary_values, make_da
 from datetime import datetime
 import torch
 import pickle
+import numpy as np
 
 class Result():
-    
-
     def __init__(self,model, yhat, config):
         self.yhat = yhat
         self.config = config
         self.model = model
+
 
 def draw_model( y_hat ,y, conf, forcing=True):
 
@@ -23,11 +23,37 @@ def draw_model( y_hat ,y, conf, forcing=True):
     
     ax[1].plot(range(2000,2050), y[2000:2050].cpu() )
     fig.suptitle("%s" % conf)
-    timestamp = datetime.now().strftime("%Y%M%D%H%M%S").replace("/","").replace(":","")
-    fig.savefig("images/%s%s.png" % ("forcing" if forcing else "not_forcing", str(conf) + timestamp))
+    fig.savefig("images/%s%s.png" % ("forcing" if forcing else "not_forcing", str(conf)))
 
 
+def get_lots_yhat(m,x):
+    res = []
+    m.eval()
+    m.clean_state()
+    prev = x[0]
+    for i in range(100000):
+        un = prev.unsqueeze(0)
+        val = m(un)
+        prev = torch.cat([prev[1:], val[0]], dim=0)
+        res.append(val.detach().cpu()[0])
+        
+    return res
+
+def plot_lots(m, x, conf):
+    y = get_lots_yhat(m,x)
+    timesteps = 100000
+    entries = 200
+    opt = [int(i*timesteps/5) for i in range(1, 5)]
+    fig, ax = plt.subplots(len(opt), figsize=(12,12))
     
+    for i in range(len(opt)):
+        ax[i].plot(range(opt[i], opt[i] + entries),y[opt[i]:(opt[i]+entries)])
+    
+    fig.savefig("images/100k%s.png" % conf)
+    
+    
+    
+
 def get_yhat(m,x, forcing=True):
     res = []
     m.eval()
@@ -59,15 +85,46 @@ def save_model(m, y_hat, conf, y_hat_sum, y_hat_f_sum):
         if a != b:
             print("ERROR SAVING MODEL, model is not the same ")
             exit()
+
+def bin_plot(y, low, high, conf, step_size):
+    count = {}
+    values = np.around(np.arange(low, high + step_size*2, step_size), decimals=2)
+    for i in values:
+        count[i] = 0
+    for i in y:
+        prev = values[0]
+        for j in values:
+            if i < j:
+                count[prev] += 1
+                break
+            prev = j
             
-def evaluate_model(m,x,y,conf):
+    names = list(count.keys())
+    values = list(count.values())
     
+    fig, ax = plt.subplots(figsize=(12,12))
+    ax.bar(range(len(count) -1), values[:-1], tick_label=names[:-1])
+    fig.savefig("images/%s%s.png" % ("barfig_non_forcing", str(conf)))
+
+        
+    
+           
+def evaluate_model(m,x,y,conf):
+    plt.close('all')
     total_sum = 5717.8652
     
+    conf += datetime.now().strftime("%Y%M%D%H%M%S").replace("/","").replace(":","")
+
     y_hat_f = get_yhat(m,x, forcing=True)
+    
+    bin_plot(y_hat_f, 0, 1, conf, 0.05)
+    
+    y_hat_lots = get_lots_yhat(m,x)
+    
     y_hat = get_yhat(m,x,forcing=False)
     draw_model(y_hat_f, y, conf,forcing=True)
     draw_model(y_hat, y, conf, forcing=False)
+    plot_lots(m, x, conf)
     
     y_hat_sum = sum(y_hat)
     y_hat_f_sum = sum(y_hat_f)
