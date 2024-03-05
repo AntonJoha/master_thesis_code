@@ -23,16 +23,16 @@ class Datagen():
         x,y = self.make_data(self.df, self.device, seq_len)
         self.cache_true[seq_len] = self.true_data(x,y,self.device)
         
-        self.get_generated_data(seq_len) # generate it as well, to save time later, don't care for result here
+        #self.get_generated_data(seq_len) # generate it as well, to save time later, don't care for result here
 
         return self.cache_true[seq_len]
         
-    def get_generated_data(self, seq_len, variance=0.01):
-        name = str(seq_len) + str(variance)
+    def get_generated_data(self, seq_len, variance=0.01, probability=0.1):
+        name = str(seq_len) + str(variance) + str(probability)
         if name in self.cache_generated:
             return self.cache_generated[name]
         x,y = self.make_data(self.df, self.device, seq_len)
-        self.cache_generated[name] = self.feature_engineering(x,y, self.device, variance)
+        self.cache_generated[name] = self.feature_engineering(x,y, self.device, variance, probability)
         self.get_true_data(seq_len) # generate it as well, to save time later, don't care for result here
         return self.cache_generated[name]
     
@@ -73,14 +73,14 @@ class Datagen():
         return torch.stack(new_x).float().to(device),torch.stack(new_y).float().to(device)
 
 
-    def feature_engineering(self, X,Y, device, variance=0.01):
+    def feature_engineering(self, X,Y, device, variance=0.01, probability=0.1):
         new_x, new_y = [], []
         count= 5
         for x, y in zip(X,Y):
             for i in range(count):
                 curr_x = []
                 for x_part in x:
-                    if random.random() < 1-i/(1+count):
+                    if random.random() < probability:
                         to_add = x_part + np.random.normal(loc=0, scale=variance)
                     else:
                         to_add = x_part

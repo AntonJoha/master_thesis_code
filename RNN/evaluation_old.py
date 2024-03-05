@@ -26,7 +26,7 @@ def draw_model( y_hat ,y, conf, forcing=True):
     
     ax[1].plot(range(2000,2050), y[2000:2050].cpu() )
     fig.suptitle("%s" % conf)
-    fig.savefig("images/%s%s.png" % ( str(conf), "forcing" if forcing else "not_forcing"))
+    fig.savefig("images_old/%s%s.png" % ("forcing" if forcing else "not_forcing", str(conf)))
 
 
 def get_lots_yhat(m,x):
@@ -52,7 +52,7 @@ def plot_lots(m, x, conf):
     for i in range(len(opt)):
         ax[i].plot(range(opt[i], opt[i] + entries),y[opt[i]:(opt[i]+entries)])
     
-    fig.savefig("images/%s_100k.png" % conf)
+    fig.savefig("images_old/100k%s.png" % conf)
     
     
     
@@ -107,7 +107,7 @@ def bin_plot(y, low, high, conf, step_size):
     
     fig, ax = plt.subplots(figsize=(12,12))
     ax.bar(range(len(count) -1), values[:-1], tick_label=names[:-1])
-    fig.savefig("images/%s%s.png" % (str(conf), "barfig_non_forcing"))
+    fig.savefig("images_old/%s%s.png" % ("barfig_non_forcing", str(conf)))
 
    
 def add_run(to_add, filename="entries"):
@@ -125,67 +125,22 @@ def add_run(to_add, filename="entries"):
     with open(filename, "w") as f:
         f.write(json.dumps(entries, indent=4))
     
-
-def mkdir(path):
-    import os
-    try:
-        os.system("mkdir %s" % ("images/" + path))
-    except:
-        print("Folder already exist")
-        
+           
 def evaluate_model(m,x,y,conf, draw_images=True):
-    conf_str = str(conf).replace(" ", "").replace("/","").replace(":","").replace("'", "")
-    model_name = conf_str
+    conf_str = str(conf).replace(" ", "")
     plt.close('all')
     total_sum = 5717.8652
     
-    mkdir(conf_str)
-    conf_str += "/" + datetime.now().strftime("%Y%M%D%H%M%S").replace("/","").replace(":","")
+    conf_str += datetime.now().strftime("%Y%M%D%H%M%S").replace("/","").replace(":","")
 
     y_hat_f = get_yhat(m,x, forcing=True)    
     y_hat = get_yhat(m,x,forcing=False)
-    y_hat_sum = sum(y_hat)
-    y_hat_f_sum = sum(y_hat_f)
-    
+
     to_add = conf
     #to_add["y_hat_f"] = y_hat_f.cpu().numpy().tolist()
     #to_add["y_hat"] = y_hat.cpu().numpy().tolist()
-    
-    y_hat_sums = [y_hat_sum.cpu().numpy().tolist()]
-    y_hat_f_sums = [y_hat_f_sum.cpu().numpy().tolist()]
-    
-    for i in range(10):
-        y_hat_f_t = get_yhat(m,x, forcing=True)    
-        y_hat_t = get_yhat(m,x,forcing=False)
-        y_hat_sums.append(sum(y_hat_t).cpu().numpy().tolist())
-        y_hat_f_sums.append(sum(y_hat_f_t).cpu().numpy().tolist())
-    
-    to_add["y_hat_sums"] = y_hat_sums
-    to_add["y_hat_f_sums"] = y_hat_f_sums
-    to_add["y_hat_sum_var"] = np.var(y_hat_sums)
-    to_add["y_hat_f_sum_var"] = np.var(y_hat_f_sums)
-    to_add["y_hat_sum_mean"] = np.mean(y_hat_sums)
-    to_add["y_hat_f_sum_mean"] = np.mean(y_hat_f_sums)
 
-    
-    a = (np.round(y.cpu().numpy() - 0.0001,decimals=4))
-    a_str = ""
-    for i in a:
-        a_str += str(i[0]) + ","
-    b = np.round(y_hat_f.cpu().numpy(), decimals=4)
-    b_str = ""
-    for i in b:
-        b_str += str(i) + ","
    
-    out = mauve.compute_mauve(p_text=a_str[:1000], q_text=b_str[-3000:], device_id=0, max_text_length=256, verbose=False)
-    print(out.mauve)
-    
-    to_add["mauve"] = out.mauve
-    
-    add_run(to_add)
-
-    save_model(m, y_hat,  model_name, y_hat_sum, y_hat_f_sum)
-    
     if draw_images:
         draw_model(y_hat_f, y, conf_str,forcing=True)
         draw_model(y_hat, y, conf_str, forcing=False)

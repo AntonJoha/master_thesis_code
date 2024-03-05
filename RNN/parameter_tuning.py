@@ -3,12 +3,14 @@ import torch.utils.data as data
 import torch.nn as nn
 import random as random
 import torch
+import mauve 
+
 
 
 def train_model(model,
                 x_data,
                 y_data,
-                sequence_length,
+                batch_size,
                 epochs,
                 lr=0.001,
                 loss=nn.MSELoss(),
@@ -17,7 +19,6 @@ def train_model(model,
                 strict_teacher_forcing=True,
                 random_state=True):
     
-    batch_size = sequence_length
     opt = optimizer(model.parameters(), lr=lr)
     loader = data.DataLoader(data.TensorDataset(x_data, y_data), batch_size=batch_size, shuffle=True)
 
@@ -77,6 +78,13 @@ def train_model(model,
         #Need to account for the fact that different sequence lenghts are used
         sum_loss[0] /= count
         
+        #ptext = str([i[0] for i in y.cpu().numpy().tolist()])
+        #qtext = str([i.cpu().numpy().tolist() for i in res])
+
+        #out = mauve.compute_mauve(p_text=ptext, q_text=qtext, device_id=0, max_text_length=256, verbose=False)
+       
+        #print(out.mauve)
+
         
         history.append([e, sum_loss[0], sum_loss[1]])
         print(history[-1])
@@ -84,7 +92,7 @@ def train_model(model,
         if len(history) > 10:
             #if no real improvements are being done stop the training. 
             # but keep doing the training if the results without correctly feeding values get better
-            if abs(history[-10][1] - history[-1][1]) < 0.0002 and history[-1][2] - history[-10][2] < 0.0002:
+            if abs(history[-10][1] - history[-1][1]) < 0.000002 and history[-1][2] - history[-10][2] < 0.0002:
                 return model, history
 
     return model, history
