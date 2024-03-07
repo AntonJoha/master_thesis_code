@@ -16,6 +16,7 @@ class Datagen():
         self.device = device
         self.cache_true = {}
         self.cache_generated = {}
+        self.cache_test = {}
     
     def get_true_data(self, seq_len):
         if seq_len in self.cache_true:
@@ -23,7 +24,7 @@ class Datagen():
         x,y = self.make_data(self.df, self.device, seq_len)
         self.cache_true[seq_len] = self.true_data(x,y,self.device)
         
-        #self.get_generated_data(seq_len) # generate it as well, to save time later, don't care for result here
+        self.get_generated_data(seq_len) # generate it as well, to save time later, don't care for result here
 
         return self.cache_true[seq_len]
         
@@ -53,8 +54,40 @@ class Datagen():
                 x_train.append(torch.tensor(prev[-seq_len:],device=device))
             y_train.append(torch.tensor(row[0]/m,device=device))
             prev.append(row[0]/m)
-        return torch.stack(x_train).to(device),torch.stack(y_train).to(device)
+        return torch.stack(x_train[:-500]).to(device),torch.stack(y_train[:-500]).to(device)
 
+    def make_test_data(self, df, device, seq_len):
+
+        x_train, y_train = [], []
+        prev = []
+        m = df.max()[0]
+        #print(df)
+        for row in df.values:
+        
+            if len(prev) < seq_len:
+                before = [0]*(seq_len - len(prev))
+                for a in prev:
+                    before.append(a)
+                x_train.append(torch.tensor(before,device=device))
+            else:   
+                x_train.append(torch.tensor(prev[-seq_len:],device=device))
+            y_train.append(torch.tensor(row[0]/m,device=device))
+            prev.append(row[0]/m)
+        return torch.stack(x_train[-500:]).to(device),torch.stack(y_train[-500:]).to(device)
+    
+    
+    
+    def get_test_data(self, seq_len):
+        if seq_len in self.cache_test:
+            return self.cache_test[seq_len]
+        x,y = self.make_test_data(self.df, self.device, seq_len)
+        self.cache_test[seq_len] = self.true_data(x,y,self.device)
+        
+        self.get_generated_data(seq_len) # generate it as well, to save time later, don't care for result here
+
+        return self.cache_test[seq_len]
+
+    
     def true_data(self, X,Y, device):
         new_x, new_y = [], []
         for x, y in zip(X,Y):

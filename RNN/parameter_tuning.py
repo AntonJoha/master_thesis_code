@@ -89,10 +89,10 @@ def train_model(model,
         history.append([e, sum_loss[0], sum_loss[1]])
         print(history[-1])
 
-        if len(history) > 10:
+        if len(history) > 15:
             #if no real improvements are being done stop the training. 
             # but keep doing the training if the results without correctly feeding values get better
-            if abs(history[-10][1] - history[-1][1]) < 0.000002 and history[-1][2] - history[-10][2] < 0.0002:
+            if abs(history[-15][1] - history[-1][1]) < 0.0001:
                 return model, history
 
     return model, history
