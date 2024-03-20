@@ -1,5 +1,5 @@
 .ipynb_checkpoints
 tags
-models/*
-images/*
+*/models/*
+*/images/*
 __pycache__

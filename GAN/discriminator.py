@@ -15,7 +15,7 @@ class Discriminator(nn.Module):
     def dummy_function(self, dont=None, care=None):
         return torch.zeros(self.input_dim)
 
-    def __init__(self, input_dim=1, output_dim=1, hidden_size=100, device=None):
+    def __init__(self, input_dim=1, output_dim=1, hidden_size=100, layers=1, device=None):
         super(Discriminator, self).__init__()
         
 
@@ -32,18 +32,18 @@ class Discriminator(nn.Module):
         self.sig = nn.Sigmoid()
 
 
-    def forward(self, z):
-        #print(z.size()[0])
-        y, self.internal_state = self.lstm(z, self.internal_state)
+    def forward(self, z):        
+        
+        y, self.internal_state = self.lstm(z)
         
         # We only care about predicting with the last value. 
         y = self.relu(y)
         y = self.linear(y)
         return self.sig(y)
 
-    def random_state(self):
-        self.internal_state = [torch.randn(1, 100).to(self.device),
-                               torch.randn(1, 100).to(self.device)]
+    def random_state(self, batch_size=1):
+        self.internal_state = [torch.randn(1,batch_size, self.hidden_size).to(self.device),
+                               torch.randn(1,batch_size, self.hidden_size).to(self.device)]
 
 
 
