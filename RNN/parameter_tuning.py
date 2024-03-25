@@ -36,8 +36,10 @@ def train_model(model,
             
             if random.random() < 0.5:
                 continue
+            if x.size()[0] < batch_size:
+                continue
         
-            model.random_state()
+            model.random_state(batch_size)
             y_pred = model(x)
             l = loss(y_pred, y)
             opt.zero_grad()
@@ -49,8 +51,12 @@ def train_model(model,
         
         count = 0
         sum_loss = [0, 0]
+        model.clean_state(batch_size)
+
         for i in range(2):
             for x, y in loader:
+                if x.size()[0] < batch_size:
+                    continue
                 model.eval()
                 with torch.no_grad():
                     y_pred = model(x)
@@ -68,7 +74,7 @@ def train_model(model,
 
         
             val = model(un)
-            prev = torch.cat([prev[1:], val[0]], dim=0)
+            prev = torch.cat((prev[1:], val))
             res.append(val.detach()[0])
         
         res = torch.tensor(res,device=device).to(device)

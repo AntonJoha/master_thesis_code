@@ -77,15 +77,10 @@ def get_yhat(m,x, forcing=True, seq_len=1):
     res = []
     m.eval()
     m.make_internal_state()
-    m.make_xi()
     prev = x[0]
     for i in x:
-        un = prev.unsqueeze(0)
-        val = m(un)
-        if forcing:
-            prev = i
-        else:
-            prev = torch.cat([prev[1:], torch.tensor([val[0][-1]]).to(device).unsqueeze(dim=0)], dim=0)
+        m.make_xi()
+        val = m()
         res.append(val.detach().cpu()[0][-1])
     return torch.tensor(res)
     
@@ -162,11 +157,13 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     
     mkdir(conf_str)
     conf_str += "/" + datetime.now().strftime("%Y%M%D%H%M%S").replace("/","").replace(":","")
-
-    y_hat_f = get_yhat(m,x, forcing=True, seq_len=conf["seq_len"])    
+    
+    print("Initial")
+    #y_hat_f = get_yhat(m,x, forcing=True, seq_len=conf["seq_len"])    
     y_hat = get_yhat(m,x,forcing=False, seq_len=conf["seq_len"])
+    print("Initial_done")
     y_hat_sum = sum(y_hat)
-    y_hat_f_sum = sum(y_hat_f)
+    #y_hat_f_sum = sum(y_hat_f)
     
     y_hat_test_f = get_yhat(m,x_test, forcing=True , seq_len=conf["seq_len"])
     y_hat_test = get_yhat(m,x_test, forcing=False , seq_len=conf["seq_len"])
@@ -176,15 +173,16 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     #to_add["y_hat"] = y_hat.cpu().numpy().tolist()
     
     y_hat_sums = [y_hat_sum.cpu().numpy().tolist()]
-    y_hat_f_sums = [y_hat_f_sum.cpu().numpy().tolist()]
+   # y_hat_f_sums = [y_hat_f_sum.cpu().numpy().tolist()]
     y_hat_test_f_sums = [sum(y_hat_test_f).cpu().numpy().tolist()]
     y_hat_test_sums = [sum(y_hat_test).cpu().numpy().tolist()]
     
-    for i in range(10):
-        y_hat_f_t = get_yhat(m,x, forcing=True , seq_len=conf["seq_len"])    
+    print("HERE")
+    for i in range(1):
+    #    y_hat_f_t = get_yhat(m,x, forcing=True , seq_len=conf["seq_len"])    
         y_hat_t = get_yhat(m,x,forcing=False, seq_len=conf["seq_len"])
         y_hat_sums.append(sum(y_hat_t).cpu().numpy().tolist())
-        y_hat_f_sums.append(sum(y_hat_f_t).cpu().numpy().tolist())
+    #    y_hat_f_sums.append(sum(y_hat_f_t).cpu().numpy().tolist())
         y_hat_test_f_t = get_yhat(m,x_test, forcing=True, seq_len=conf["seq_len"])
         y_hat_test_t = get_yhat(m,x_test, forcing=False, seq_len=conf["seq_len"])
         y_hat_test_sums.append(sum(y_hat_test_t).cpu().numpy().tolist())
@@ -193,16 +191,16 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     print(y_hat_test_f_sums)
 
     to_add["y_hat_sums"] = y_hat_sums
-    to_add["y_hat_f_sums"] = y_hat_f_sums
+  #  to_add["y_hat_f_sums"] = y_hat_f_sums
     to_add["y_hat_sum_var"] = np.var(y_hat_sums)
-    to_add["y_hat_f_sum_var"] = np.var(y_hat_f_sums)
+   # to_add["y_hat_f_sum_var"] = np.var(y_hat_f_sums)
     to_add["y_hat_sum_mean"] = np.mean(y_hat_sums)
-    to_add["y_hat_f_sum_mean"] = np.mean(y_hat_f_sums)
+   # to_add["y_hat_f_sum_mean"] = np.mean(y_hat_f_sums)
     to_add["y_hat_test_f_sum_mean"] = np.mean(y_hat_test_f_sums)
     to_add["y_hat_test_f_sum_var"] = np.var(y_hat_test_f_sums)
     to_add["y_hat_test_sum_mean"] = np.mean(y_hat_test_sums)
     to_add["y_hat_test_sum_var"] = np.var(y_hat_test_sums)
-    to_add["y_hat_f_bar"] = get_bin(y_hat_f, 0, 1, conf_str, 0.05)
+   # to_add["y_hat_f_bar"] = get_bin(y_hat_f, 0, 1, conf_str, 0.05)
     to_add["y_hat_bar"] = get_bin(y_hat, 0, 1, conf_str, 0.05)
 
     
@@ -220,27 +218,27 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     
     to_add["mauve"] = out.mauve
     
-    b = np.round(y_hat_f.cpu().numpy(), decimals=4)
-    b_str = ""
-    for i in b:
-        b_str += str(i) + ","
+   # b = np.round(y_hat_f.cpu().numpy(), decimals=4)
+   # b_str = ""
+   # for i in b:
+   #     b_str += str(i) + ","
     
-    out = mauve.compute_mauve(p_text=a_str[:1000], q_text=b_str[-3000:], device_id=0, max_text_length=256, verbose=False)
+   # out = mauve.compute_mauve(p_text=a_str[:1000], q_text=b_str[-3000:], device_id=0, max_text_length=256, verbose=False)
     
     
-    to_add["mauve_f"] = out.mauve
+   # to_add["mauve_f"] = out.mauve
     
     add_run(to_add)
 
     #save_model(m, y_hat,  model_name, y_hat_sum, y_hat_f_sum)
     
     if draw_images:
-        draw_model(y_hat_f, y, conf_str,forcing=True)
+     #   draw_model(y_hat_f, y, conf_str,forcing=True)
         draw_model(y_hat, y, conf_str, forcing=False)
         draw_test_model(y_hat_test_f, y_test, conf_str,forcing=True, extra_str="test")
         draw_test_model(y_hat_test, y_test, conf_str,forcing=False,extra_str="test")
-        bin_plot(y_hat_f, 0, 1, conf_str, 0.05, "forcing")
+       # bin_plot(y_hat_f, 0, 1, conf_str, 0.05, "forcing")
         bin_plot(y_hat, 0, 1, conf_str, 0.05, "non-forcing")
 
-        plot_lots(m, x, conf_str)
+        #plot_lots(m, x, conf_str)
 

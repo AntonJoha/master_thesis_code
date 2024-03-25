@@ -13,6 +13,7 @@ class Layer(nn.Module):
         self.lstm = nn.LSTM(input_size=self.hidden_size,
                             hidden_size=self.hidden_size,
                             num_layers=1,
+                            batch_first=True,
                             device=self.device)
         
         self.g = nn.Sequential(
@@ -33,10 +34,10 @@ class Layer(nn.Module):
     def set_internal_state(self, internal_state):
         self.internal_state=internal_state
     
-    def make_internal_state(self):
+    def make_internal_state(self, batch_size=1):
         self.internal_state = [
-                    torch.zeros(1, self.seq_len, self.hidden_size).to(self.device),
-                    torch.zeros(1, self.seq_len, self.hidden_size).to(self.device)
+                    torch.zeros(1, batch_size, self.hidden_size).to(self.device),
+                    torch.zeros(1, batch_size, self.hidden_size).to(self.device)
                 ]
 
 class Generator(nn.Module):
@@ -89,9 +90,9 @@ class Generator(nn.Module):
         for layer, state in zip(self.h_l, internal_state):
             layer.set_internal_state(state)
 
-    def make_internal_state(self):
+    def make_internal_state(self, batch_size=1):
         for layer in self.h_l:
-            layer.make_internal_state()
+            layer.make_internal_state(batch_size)
 
     def set_xi(self, xi):
         self.xi = xi

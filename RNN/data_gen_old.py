@@ -1,4 +1,5 @@
 from parameter_tuning import train_model
+from rnn import PredictTime
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -98,7 +99,7 @@ class Datagen():
                         to_add = 1
                     if to_add < 0:
                         to_add = 0
-                    curr_x.append([to_add])
+                    curr_x.append(to_add)
                 new_x.append(torch.tensor(curr_x,device=device))
                 new_y.append(torch.tensor([y]).to(device))
         
@@ -120,7 +121,7 @@ class Datagen():
                         to_add = 1
                     if to_add < 0:
                         to_add = 0
-                    curr_x.append([to_add])
+                    curr_x.append(to_add)
                 new_x.append(torch.tensor(curr_x,device=device))
                 new_y.append(torch.tensor([y]).to(device))
 

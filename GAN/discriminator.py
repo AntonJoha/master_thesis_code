@@ -26,7 +26,7 @@ class Discriminator(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size=self.input_dim, hidden_size=self.hidden_size)
+        self.lstm = nn.LSTM(input_size=self.input_dim, hidden_size=self.hidden_size, batch_first=True)
         self.linear = nn.Linear(in_features=self.hidden_size, out_features=self.output_dim)
         self.relu = nn.LeakyReLU()
         self.sig = nn.Sigmoid()

@@ -51,7 +51,7 @@ def get_lots_yhat(m,x):
     for i in range(100000):
         un = prev.unsqueeze(0)
         val = m(un)
-        prev = torch.cat([prev[1:], val[0]], dim=0)
+        prev = torch.cat([prev[1:], val], dim=0)
         res.append(val.detach().cpu()[0])
         
     return res
@@ -82,7 +82,7 @@ def get_yhat(m,x, forcing=True):
         if forcing:
             prev = i
         else:
-            prev = torch.cat([prev[1:], val[0]], dim=0)
+            prev = torch.cat([prev[1:], val], dim=0)
         res.append(val.detach().cpu()[0])
     return torch.tensor(res)
     
@@ -229,7 +229,7 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     
     add_run(to_add)
 
-    save_model(m, y_hat,  model_name, y_hat_sum, y_hat_f_sum)
+    #save_model(m, y_hat,  model_name, y_hat_sum, y_hat_f_sum)
     
     if draw_images:
         draw_model(y_hat_f, y, conf_str,forcing=True)

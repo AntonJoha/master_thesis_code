@@ -43,7 +43,7 @@ class Generator(nn.Module):
         self.T = nn.ModuleList()
         self.G = nn.ModuleList()
         for i in range(self.layers):
-            self.T.append(nn.LSTM(input_size=self.g_size, hidden_size=self.g_size).to(self.device))
+            self.T.append(nn.LSTM(input_size=self.g_size, hidden_size=self.g_size, batch_first=True).to(self.device))
             self.G.append(self.get_g())
             
         self.last = nn.Linear(in_features=self.g_size, out_features=self.output_dim).to(self.device)
@@ -60,12 +60,12 @@ class Generator(nn.Module):
         z = self.last(z)
         return self.sig(z)
 
-    def lstm_zero(self, seq_len=1):
+    def lstm_zero(self, batch_size=1):
         self.internal_state = []
         #first and last is not an lstm layer.
         for layer in self.T:
-            self.internal_state.append([torch.zeros(1,seq_len, self.g_size).to(self.device),
-                                        torch.zeros(1, seq_len, self.g_size).to(self.device)])
+            self.internal_state.append([torch.zeros(1,batch_size, self.g_size).to(self.device),
+                                        torch.zeros(1, batch_size, self.g_size).to(self.device)])
 
     def init_state(self, batch_size=1):
         for i,e in enumerate(self.internal_state):

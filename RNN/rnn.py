@@ -16,9 +16,9 @@ class PredictTime(nn.Module):
         self.h2 = h2
 
         self.lout = None
-        self.lstm1 = nn.LSTM(input_size=input_size, hidden_size=self.h1, num_layers=1).to(device) # two lstm different hidden size
+        self.lstm1 = nn.LSTM(input_size=input_size, hidden_size=self.h1, num_layers=1, batch_first=True).to(device) # two lstm different hidden size
         if hidden_layers == 2:
-            self.lstm2 = nn.LSTM(input_size=self.h1, hidden_size=self.h2, num_layers=1).to(device)
+            self.lstm2 = nn.LSTM(input_size=self.h1, hidden_size=self.h2, num_layers=1, batch_first=True).to(device)
             self.lout = nn.Linear(self.h2,self.output_size).to(device)
         else:
             self.lout = nn.Linear(self.h1, self.output_size).to(device)

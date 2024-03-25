@@ -45,7 +45,7 @@ def train_model(model_g,
                 continue
             if random.random() < 0.5:
                 continue
-            model_g.lstm_zero(seq_len)
+            model_g.lstm_zero(batch_size)
             y_pred = model_g(x).detach()
             l = bce(model_d(y_pred), false) + bce(model_d(x), true)
             optimizer_d.zero_grad()
@@ -59,7 +59,7 @@ def train_model(model_g,
                 continue
             if random.random() < 0.5:
                 continue
-            model_g.lstm_zero(seq_len)
+            model_g.lstm_zero(batch_size)
             y_pred = model_g(x)
             d = model_d(y_pred)
             
@@ -78,7 +78,10 @@ def train_model(model_g,
         sum_loss = [0, 0]
         for j in range(2):
             for x, y in loader:
+                if x.size()[0] < batch_size:
+                    continue
                 model_g.eval()
+                model_g.lstm_zero(batch_size)
                 with torch.no_grad():
                     y_pred = model_g(x)
                     res = []
