@@ -38,7 +38,7 @@ class Layer(nn.Module):
 
     
     def calculate_z(self, mean, R):
-        v = torch.randn(mean.size()).unsqueeze(-1)
+        v = torch.randn(mean.size()).unsqueeze(-1).to(self.device)
         mult = torch.matmul(R, v).squeeze()
         return mult + mean
     

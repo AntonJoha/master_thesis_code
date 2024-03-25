@@ -22,7 +22,7 @@ class Layer(nn.Module):
             nn.Linear(in_features=self.latent_dim,
                             out_features=self.hidden_size,
                             device=self.device),
-            nn.LeakyReLU())
+            nn.LeakyReLU()).to(self.device)
 
 
     # Adding the noise and previous layer
@@ -66,11 +66,11 @@ class Generator(nn.Module):
             nn.Linear(in_features=self.latent_dim,
                             out_features=self.hidden_size,
                             device=self.device),
-            nn.Tanh())
+            nn.Tanh()).to(self.device)
 
         self.h_0 = nn.Sequential(
-                nn.Linear(in_features=self.hidden_size, out_features=self.output_dim),
-                nn.Sigmoid())
+                nn.Linear(in_features=self.hidden_size, out_features=self.output_dim, device=self.device),
+                nn.Sigmoid()).to(self.device)
 
     def forward(self, batch_size=1):
         if self.xi is None:
@@ -99,7 +99,7 @@ class Generator(nn.Module):
     def make_xi(self, batch_size=1):
         self.xi = []
         for i in range(self.layers + 1):
-            self.xi.append(torch.normal(mean=torch.arange(batch_size, self.seq_len, self.latent_dim), std=1)
+            self.xi.append(torch.normal(mean=torch.zeros(batch_size, self.seq_len, self.latent_dim).to(self.device), std=1)
                            .to(self.device))
 
 

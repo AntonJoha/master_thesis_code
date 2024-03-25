@@ -47,20 +47,19 @@ def draw_test_model( y_hat ,y, conf, forcing=True, extra_str=""):
 def get_lots_yhat(m,x, seq_len=1):
     res = []
     m.eval()
-    m.make_internal_state()
-    m.make_
+    m.lstm_zero(seq_len=seq_len)
     prev = x[0]
-    for i in range(100000):
+    for i in range(50000):
         un = prev.unsqueeze(0)
         val = m(un)
-        prev = torch.cat([prev[1:], val[0]], dim=0)
-        res.append(val.detach().cpu()[0])
+        prev = torch.cat([prev[1:], torch.tensor([val[0][-1]]).to(device).unsqueeze(dim=0)], dim=0)        
+        res.append(val.detach().cpu()[0][-1])
         
     return res
 
-def plot_lots(m, x, conf):
-    y = get_lots_yhat(m,x)
-    timesteps = 100000
+def plot_lots(m, x, conf, seq_len=1):
+    y = get_lots_yhat(m,x,seq_len)
+    timesteps = 50000
     entries = 200
     opt = [int(i*timesteps/5) for i in range(1, 5)]
     fig, ax = plt.subplots(len(opt), figsize=(12,12))
@@ -76,8 +75,7 @@ def plot_lots(m, x, conf):
 def get_yhat(m,x, forcing=True, seq_len=1):
     res = []
     m.eval()
-    m.make_internal_state()
-    m.make_xi()
+    m.lstm_zero(seq_len=seq_len)
     prev = x[0]
     for i in x:
         un = prev.unsqueeze(0)
@@ -242,5 +240,5 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
         bin_plot(y_hat_f, 0, 1, conf_str, 0.05, "forcing")
         bin_plot(y_hat, 0, 1, conf_str, 0.05, "non-forcing")
 
-        plot_lots(m, x, conf_str)
+        #plot_lots(m, x, conf_str, seq_len=conf["seq_len"])
 
