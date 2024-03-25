@@ -104,7 +104,7 @@ class Datagen():
 
 
     def feature_engineering(self, X,Y, device, variance=0.01, probability=0.1):
-        new_x, new_y = [], []
+        new_x, new_y , new_x_1= [], [], []
         count= 1
         for x, y in zip(X,Y):
             for i in range(count):
@@ -119,9 +119,13 @@ class Datagen():
                     if to_add < 0:
                         to_add = 0
                     curr_x.append([to_add])
-                new_x.append(torch.tensor(curr_x,device=device))
-                new_y.append(torch.tensor([y]).to(device))
+                x_val = torch.tensor(curr_x,device=device)
+                y_val = torch.tensor([y]).to(device)
+                x_1 = torch.cat((x_val[1:], y_val.unsqueeze(-1))).to(device)
+                new_x.append(x_val)
+                new_y.append(y_val)
+                new_x_1.append(x_1.to(device))
 
-        return torch.stack(new_x).float().to(device), torch.stack(new_y).float().to(device)
+        return torch.stack(new_x).float().to(device), torch.stack(new_y).float().to(device), torch.stack(new_x_1).float().to(device)
 
     
