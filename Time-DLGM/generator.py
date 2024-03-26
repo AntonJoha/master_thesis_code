@@ -26,6 +26,9 @@ class Layer(nn.Module):
             nn.LeakyReLU()).to(self.device)
 
 
+    def get_internal_state(self):
+        return self.internal_state
+
     # Adding the noise and previous layer
     def forward(self, h, xi):
         h, self.internal_state = self.lstm(h, self.internal_state)
@@ -82,9 +85,14 @@ class Generator(nn.Module):
         for h in self.h_l:
             v = h(v, self.xi[count])
             count += 1
-        
-        return self.h_0(v)
+        return self.h_0(v[:,-1,:]), self.get_internal_state()
 
+
+    def get_internal_state(self):
+        states = []
+        for layer in self.h_l:
+            states.append(layer.get_internal_state())
+        return states
 
     def set_internal_state(self, internal_state):
         for layer, state in zip(self.h_l, internal_state):

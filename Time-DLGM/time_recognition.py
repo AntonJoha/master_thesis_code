@@ -26,9 +26,6 @@ class TimeLayer(nn.Module):
     def forward(self, x):
         self.init_hidden(x.size())
         _, h = self.lstm(x, self.internal_state)
-        print("Hello: ", h[0].size())
-        print("?", h[0][-1][-1], h[0][-1][-1].size())
-        h = (h[0][-1][-1].unsqueeze(0), h[1][-1][-1].unsqueeze(0))
         return h
 
 class TimeRecognition(nn.Module):

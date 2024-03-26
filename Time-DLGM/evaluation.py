@@ -5,7 +5,7 @@ import torch
 import pickle
 import numpy as np
 import json
-import mauve 
+#import mauve 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -52,7 +52,7 @@ def get_lots_yhat(m,x, seq_len=1):
     prev = x[0]
     for i in range(100000):
         un = prev.unsqueeze(0)
-        val = m(un)
+        val, _ = m(un)
         prev = torch.cat([prev[1:], val[0]], dim=0)
         res.append(val.detach().cpu()[0])
         
@@ -70,8 +70,6 @@ def plot_lots(m, x, conf):
     
     fig.savefig("images/%s_100k.png" % conf)
     
-    
-    
 
 def get_yhat(m,x, forcing=True, seq_len=1):
     res = []
@@ -80,7 +78,7 @@ def get_yhat(m,x, forcing=True, seq_len=1):
     prev = x[0]
     for i in x:
         m.make_xi()
-        val = m()
+        val, _ = m()
         res.append(val.detach().cpu()[0][-1])
     return torch.tensor(res)
     
@@ -150,7 +148,7 @@ def mkdir(path):
         print("Folder already exist")
         
 def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
-    conf_str = str(conf).replace(" ", "").replace("/","").replace(":","").replace("'", "")
+    conf_str = str(conf).replace(" ", "").replace("/","").replace(":","").replace("'", "").replace("{","").replace("}","")
     model_name = conf_str
     plt.close('all')
     total_sum = 5717.8652
@@ -213,10 +211,10 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     for i in b:
         b_str += str(i) + ","
    
-    out = mauve.compute_mauve(p_text=a_str[:1000], q_text=b_str[-3000:], device_id=0, max_text_length=256, verbose=False)
+    #out = mauve.compute_mauve(p_text=a_str[:1000], q_text=b_str[-3000:], device_id=0, max_text_length=256, verbose=False)
     
     
-    to_add["mauve"] = out.mauve
+    #to_add["mauve"] = out.mauve
     
    # b = np.round(y_hat_f.cpu().numpy(), decimals=4)
    # b_str = ""
