@@ -11,21 +11,21 @@ class TimeLayer(nn.Module):
         self.input_dim=input_dim
         self.hidden_size = hidden_size
         self.seq_len = seq_len
-        self.device = None
+        self.device = device
 
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=self.hidden_size,num_layers=1, batch_first=True)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=self.hidden_size,num_layers=1, batch_first=True).to(self.device)
     
     def init_hidden(self, size):
         self.internal_state = [
-                    torch.zeros(1, size[0], self.hidden_size).to(self.device),
-                    torch.zeros(1, size[0], self.hidden_size).to(self.device)
+                    torch.zeros(1, size[0], self.hidden_size,device=self.device).to(self.device),
+                    torch.zeros(1, size[0], self.hidden_size,device=self.device).to(self.device)
                 ]
 
 
 
     def forward(self, x):
         self.init_hidden(x.size())
-        _, h = self.lstm(x, self.internal_state)
+        _, h = self.lstm(x)# , self.internal_state)
         return h
 
 class TimeRecognition(nn.Module):
@@ -57,5 +57,5 @@ class TimeRecognition(nn.Module):
             self.h.append(TimeLayer(input_dim=self.input_dim,
                                     hidden_size=self.hidden_size,
                                     seq_len=self.seq_len,
-                                    device=self.device))
+                                    device=self.device).to(self.device))
 
