@@ -176,14 +176,16 @@ def evaluate_model(m,m_r, m_t,x,y, x_1,x_test,y_test, x_test_1,conf, draw_images
     to_add = conf
     to_add["y_hat_f"] = y_hat_f.cpu().numpy().tolist()
     to_add["y_hat"] = y_hat.cpu().numpy().tolist()
-    
+    to_add["y_hat_test_f"] = y_hat_test_f.cpu().numpy().tolist()
+    to_add["y_hat_test"] = y_hat_test.cpu().numpy().tolist()
     y_hat_sums = [y_hat_sum.cpu().numpy().tolist()]
     y_hat_f_sums = [y_hat_f_sum.cpu().numpy().tolist()]
     y_hat_test_f_sums = [sum(y_hat_test_f).cpu().numpy().tolist()]
     y_hat_test_sums = [sum(y_hat_test).cpu().numpy().tolist()]
     
+    
     print("HERE")
-    for i in range(1):
+    for i in range(10):
         y_hat_f_t = get_yhat(m,m_r, m_t, x, x_1, forcing=True , seq_len=conf["seq_len"])    
         y_hat_t = get_yhat(m,m_r, m_t, x, x_1, forcing=False, seq_len=conf["seq_len"])
         y_hat_sums.append(sum(y_hat_t).cpu().numpy().tolist())
