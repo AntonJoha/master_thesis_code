@@ -169,8 +169,8 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
     y_hat_test = get_yhat(m,x_test, forcing=False)
     
     to_add = conf
-    #to_add["y_hat_f"] = y_hat_f.cpu().numpy().tolist()
-    #to_add["y_hat"] = y_hat.cpu().numpy().tolist()
+    to_add["y_hat_f"] = y_hat_f.cpu().numpy().tolist()
+    to_add["y_hat"] = y_hat.cpu().numpy().tolist()
     
     y_hat_sums = [y_hat_sum.cpu().numpy().tolist()]
     y_hat_f_sums = [y_hat_f_sum.cpu().numpy().tolist()]
@@ -239,5 +239,5 @@ def evaluate_model(m,x,y,x_test,y_test,conf, draw_images=True):
         bin_plot(y_hat_f, 0, 1, conf_str, 0.05, "forcing")
         bin_plot(y_hat, 0, 1, conf_str, 0.05, "non-forcing")
 
-        plot_lots(m, x, conf_str)
+        #plot_lots(m, x, conf_str)
 
