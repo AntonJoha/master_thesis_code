@@ -23,7 +23,7 @@ def get_values_for_label(struct, label="", unique=True):
 def get_entries_with_value(struct, label="", value=""):
     to_return = []
     for s in struct:
-        if s[label] == value:
+        if str(s[label]) == str(value):
             to_return.append(s)
     return to_return
 
