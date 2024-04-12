@@ -134,3 +134,34 @@ def multiple_box_plots(struct_1, struct_2, x_label, y_label, label_1, label_2, t
     ax.set_title(title)
     filename = folder + str(x_text) + "_" + str(y_text) + "_" + str(label_1) + str(label_2) +  title + "_" + "boxplots.png"
     fig.savefig(filename)
+    
+    
+    
+def boxplot_two_values(data, labels, x_text, y_text, title, color=["lightgreen", "lightblue"], color_v=["lightgreen", "lightblue"],folder="plots/",outliers=False):
+    
+    fig, ax = plt.subplots()
+    
+    b = ax.boxplot(data, labels=labels,  patch_artist=True, showfliers=outliers)
+    
+    for box, c in zip(b["boxes"], color):
+        
+        box.set_facecolor(c)
+    
+    ax.set_xlabel(x_text)
+    ax.set_ylabel(y_text)
+    ax.set_title(title)
+    
+    filename = folder + str(x_text) + "_" + str(y_text) + "_" + str(title) + "outliers" if outliers else "" +  "multipleboxplots.png"
+    fig.savefig(filename)
+    
+    
+    
+    fig, ax = plt.subplots()
+    
+    p = ax.violinplot(data)
+    for body, c in zip(p["bodies"],color_v):
+        body.set_facecolor(c)
+        
+    ax.set_xticks([y + 1 for y in range(len(labels))], labels=labels)
+    
+    

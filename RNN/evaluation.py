@@ -74,9 +74,10 @@ def plot_lots(m, x, conf):
 def get_yhat(m,x, forcing=True):
     res = []
     m.eval()
-    m.clean_state()
     prev = x[0]
     for i in x:
+        m.clean_state()
+
         un = prev.unsqueeze(0)
         val = m(un)
         if forcing:
